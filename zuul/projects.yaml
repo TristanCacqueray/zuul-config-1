@@ -1,0 +1,9 @@
+---
+- tenant:
+    name: 'local'
+    source:
+      github:
+        untrusted-projects:
+          - TristanAlt/demo-project
+
+
