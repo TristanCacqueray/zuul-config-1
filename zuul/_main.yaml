@@ -1,0 +1,18 @@
+# This file is managed by ansible, do not edit directly
+---
+- tenant:
+    name: 'local'
+    source:
+      local-git:
+        config-projects:
+          - config
+        untrusted-projects:
+          - sf-jobs
+
+- tenant:
+    name: 'local'
+    source:
+      local-git:
+        untrusted-projects:
+          - zuul-jobs:
+              shadow: sf-jobs
