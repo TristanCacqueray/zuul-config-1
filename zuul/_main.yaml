@@ -3,16 +3,16 @@
 - tenant:
     name: 'local'
     source:
-      local-cgit:
+      github:
         config-projects:
-          - config
+          - TristanAlt/zuul-config
         untrusted-projects:
-          - sf-jobs
+          - TristanAlt/zuul-jobs
 
 - tenant:
     name: 'local'
     source:
-      local-cgit:
+      local-git:
         untrusted-projects:
           - zuul-jobs:
-              shadow: sf-jobs
+              shadow: TristanAlt/zuul-jobs

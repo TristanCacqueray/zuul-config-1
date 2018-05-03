@@ -7,7 +7,7 @@
     post-run:
       - playbooks/base/post.yaml
     roles:
-      - zuul: sf-jobs
+      - zuul: TristanAlt/zuul-jobs
       - zuul: zuul-jobs
     timeout: 1800
     # Set attempts to 1 until it's working well
@@ -43,7 +43,7 @@
       nodes: []
 
 - project:
-    name: config
+    name: TristanAlt/zuul-config
     check:
       jobs:
         - config-check
@@ -64,7 +64,7 @@
         - linters
 
 - project:
-    name: sf-jobs
+    name: TristanAlt/zuul-jobs
     check:
       jobs:
         - linters
