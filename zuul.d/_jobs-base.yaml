@@ -23,3 +23,52 @@
     name: semaphore-config-update
     max: 1
 
+- job:
+    name: config-check
+    parent: base
+    description: Validate the config repo.
+    run: playbooks/config/check.yaml
+    nodeset:
+      nodes: []
+
+- job:
+    name: config-update
+    parent: base
+    description: Deploy config repo update.
+    run: playbooks/config/update.yaml
+    secrets:
+      - site_install_server
+    semaphore: semaphore-config-update
+    nodeset:
+      nodes: []
+
+- project:
+    name: config
+    check:
+      jobs:
+        - config-check
+    gate:
+      jobs:
+        - config-check
+    post:
+      jobs:
+        - config-update
+
+- project:
+    name: zuul-jobs
+    check:
+      jobs:
+        - linters
+    gate:
+      jobs:
+        - linters
+
+- project:
+    name: sf-jobs
+    check:
+      jobs:
+        - linters
+    gate:
+      jobs:
+        - linters
+

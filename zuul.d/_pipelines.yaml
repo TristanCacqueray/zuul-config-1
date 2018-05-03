@@ -1,5 +1,136 @@
 ---
 - pipeline:
+    name: check
+    description: |
+      Newly uploaded patchsets enter this pipeline to receive an
+      initial +/-1 Verified vote.
+    manager: independent
+    trigger:
+      github:
+        - event: pull_request
+          action:
+            - opened
+            - changed
+            - reopened
+        - event: pull_request
+          action: comment
+          comment: (?i)^\s*recheck\s*$
+    start:
+      github:
+        status: 'pending'
+        status-url: "https://sftests.com/zuul/t/local/status.html"
+        comment: false
+    success:
+      github:
+        status: 'success'
+      sqlreporter:
+    failure:
+      github:
+        status: 'failure'
+      sqlreporter:
+
+- pipeline:
+    name: gate
+    description: |
+      Changes that have been approved by core developers are enqueued
+      in order in this pipeline, and if they pass tests, will be
+      merged.
+    success-message: Build succeeded (gate pipeline).
+    failure-message: |
+      Build failed (gate pipeline).  For information on how to proceed, see
+      http://docs.openstack.org/infra/manual/developers.html#automated-testing
+    manager: dependent
+    precedence: high
+    require:
+      github:
+        review:
+          # Require an approval from user with write access (e.g. core-reviewer)
+          - permission: write
+            type: approved
+        # Require label
+        label: zuulit
+        status: "my-zuul-test\\[bot\\]:local/check:success"
+        open: True
+        current-patchset: True
+    trigger:
+      github:
+        - event: pull_request_review
+          action: submitted
+          state: approved
+        - event: pull_request
+          action: comment
+          comment: (?i)^\s*regate\s*$
+        - event: pull_request_review
+          action: submitted
+          state: approved
+        - event: pull_request_review
+          action: dismissed
+          state: request_changes
+        - event: pull_request
+          action: status
+          status: "my-zuul-test\\[bot\\]:local/check:success"
+        - event: pull_request
+          action: labeled
+          label:
+            - zuulit
+    start:
+      github:
+        status: 'pending'
+        status-url: "https://sftests.com/zuul/t/local/status.html"
+        comment: false
+    success:
+      github:
+        status: 'success'
+        merge: true
+        comment: true
+      sqlreporter:
+    failure:
+      github:
+        status: 'failure'
+        comment: true
+      sqlreporter:
+    window-floor: 20
+    window-increase-factor: 2
+
+- pipeline:
+    name: post
+    post-review: true
+    description: This pipeline runs jobs that operate after each change is merged.
+    manager: independent
+    precedence: low
+    trigger:
+      github:
+        - event: push
+          ref: ^refs/heads/.*$
+    success:
+      sqlreporter:
+    failure:
+      smtp:
+        from: "zuul@sftests.com"
+        to: "root@localhost"
+        subject: '[Zuul] Job failed in post pipeline: {change.project}'
+      sqlreporter:
+
+- pipeline:
+    name: release
+    post-review: true
+    description: When a commit is tagged as a release, this pipeline runs jobs that publish archives and documentation.
+    manager: independent
+    precedence: high
+    trigger:
+      github:
+        - event: push
+          ref: ^refs/tags/[0-9]+(\.[0-9]+)*$
+    success:
+      sqlreporter:
+    failure:
+      smtp:
+        from: "zuul@sftests.com"
+        to: "root@localhost"
+        subject: '[Zuul] Job failed in release pipeline: {change.project}'
+      sqlreporter:
+
+- pipeline:
     name: periodic
     post-review: true
     description: Jobs in this queue are triggered daily.
