@@ -3,7 +3,7 @@
 - tenant:
     name: 'local'
     source:
-      local-git:
+      local-cgit:
         config-projects:
           - config
         untrusted-projects:
@@ -12,7 +12,7 @@
 - tenant:
     name: 'local'
     source:
-      local-git:
+      local-cgit:
         untrusted-projects:
           - zuul-jobs:
               shadow: sf-jobs
